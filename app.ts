@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import authRouter from "./src/auth/authRouter";
+import router from "./src/router";
 import { globalErrorHandler } from "./src/utils/error";
 
 const createApp = () => {
@@ -21,7 +21,7 @@ const createApp = () => {
   app.use(morgan("combined"));
   app.use(cookieParser());
 
-  app.use("/auth", authRouter);
+  app.use(router);
 
   app.use(globalErrorHandler);
 

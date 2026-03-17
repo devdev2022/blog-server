@@ -22,9 +22,28 @@ const startServer = async () => {
     res.json({ message: "pong" });
   });
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Listening on Port ${PORT}`);
   });
+
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`Port ${PORT} is already in use.`);
+    } else {
+      console.error("Server error:", err);
+    }
+    process.exit(1);
+  });
+
+  const shutdown = async () => {
+    server.close(async () => {
+      await AppDataSource.destroy();
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 };
 
 startServer();

@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 import crypto from "crypto";
 import { Post } from "./Posts";
+import { MainCategory } from "./MainCategory";
 import { WorkExperience } from "./WorkExperience";
 import { SideProject } from "./SideProject";
 import { uuidTransformer } from "../utils/uuid.transformer";
@@ -41,6 +42,9 @@ export class User {
 
   @OneToMany(() => Post, (post) => post.user)
   posts!: Post[];
+
+  @OneToMany(() => MainCategory, (category) => category.user)
+  mainCategories!: MainCategory[];
 
   @OneToMany(() => WorkExperience, (exp) => exp.user)
   workExperiences!: WorkExperience[];

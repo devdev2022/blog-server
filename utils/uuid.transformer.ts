@@ -1,6 +1,7 @@
 export const uuidTransformer = {
   to: (uuid: string) => Buffer.from(uuid.replace(/-/g, ""), "hex"),
-  from: (bin: Buffer) => {
+  from: (bin: Buffer | null) => {
+    if (!bin) return null;
     const hex = bin.toString("hex");
     return [
       hex.slice(0, 8),
