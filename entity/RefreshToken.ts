@@ -8,7 +8,8 @@ import {
   BeforeInsert,
 } from "typeorm";
 import crypto from "crypto";
-import { User, uuidTransformer } from "./User";
+import { uuidTransformer } from "../utils/uuid.transformer";
+import { User } from "./User";
 
 @Entity("refresh_tokens")
 export class RefreshToken {

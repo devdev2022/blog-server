@@ -4,22 +4,13 @@ import {
   Column,
   CreateDateColumn,
   BeforeInsert,
+  OneToMany,
 } from "typeorm";
 import crypto from "crypto";
-
-export const uuidTransformer = {
-  to: (uuid: string) => Buffer.from(uuid.replace(/-/g, ""), "hex"),
-  from: (bin: Buffer) => {
-    const hex = bin.toString("hex");
-    return [
-      hex.slice(0, 8),
-      hex.slice(8, 12),
-      hex.slice(12, 16),
-      hex.slice(16, 20),
-      hex.slice(20),
-    ].join("-");
-  },
-};
+import { Post } from "./Posts";
+import { WorkExperience } from "./WorkExperience";
+import { SideProject } from "./SideProject";
+import { uuidTransformer } from "../utils/uuid.transformer";
 
 @Entity("users")
 export class User {
@@ -42,6 +33,18 @@ export class User {
   @Column({ nullable: true })
   avatar_url?: string;
 
+  @Column({ type: "varchar", length: 500, nullable: true, default: null })
+  bio?: string | null;
+
   @CreateDateColumn()
   created_at!: Date;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts!: Post[];
+
+  @OneToMany(() => WorkExperience, (exp) => exp.user)
+  workExperiences!: WorkExperience[];
+
+  @OneToMany(() => SideProject, (project) => project.user)
+  sideProjects!: SideProject[];
 }
