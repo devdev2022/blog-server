@@ -38,6 +38,7 @@ export const findSideProjects = async () => {
 export const findTechStacks = async () => {
   return AppDataSource.getRepository(TechStack)
     .createQueryBuilder("techStack")
+    .leftJoinAndSelect("techStack.category", "category")
     .orderBy("techStack.name", "ASC")
     .getMany();
 };

@@ -64,5 +64,6 @@ export const getTechStacks = async () => {
     id: t.id,
     name: t.name,
     iconUrl: t.iconUrl,
+    category: t.category ? { id: t.category.id, name: t.category.name } : null,
   }));
 };
