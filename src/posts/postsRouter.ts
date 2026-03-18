@@ -12,4 +12,7 @@ router.get("/tags", postsController.getTagList);
 // 포스트 목록 조회 (페이지네이션, 카테고리/태그 필터링)
 router.get("/", postsController.getPostList);
 
+// 포스트 상세 조회
+router.get("/:id", postsController.getPostById);
+
 export default router;

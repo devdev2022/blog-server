@@ -76,3 +76,45 @@ export const getCategoryList = async () => {
 export const getTagList = async () => {
   return postsDao.findAllTags();
 };
+
+const toPostSummary = (post: any) => ({
+  id: post.id.replaceAll("-", ""),
+  title: post.title,
+  content: post.content,
+  createdAt: post.createdAt,
+  editedAt: post.editedAt,
+  mainCategory: post.mainCategory
+    ? { id: post.mainCategory.id, name: post.mainCategory.name }
+    : null,
+  subCategory: post.subCategory
+    ? {
+        id: post.subCategory.id,
+        name: post.subCategory.name,
+        mainCategory: post.mainCategory
+          ? { id: post.mainCategory.id, name: post.mainCategory.name }
+          : null,
+      }
+    : null,
+  tags: (post.tags ?? []).map((tag: any) => ({ id: tag.id, name: tag.name })),
+  media: (post.media ?? []).map((m: any) => ({
+    id: m.id,
+    type: m.type,
+    url: m.url,
+    order: m.order,
+  })),
+});
+
+export const getPostById = async (id: string) => {
+  const post = await postsDao.findPostById(id);
+  if (!post) return null;
+
+  const { prev, next } = await postsDao.findAdjacentPosts(post.createdAt);
+  const recentPosts = await postsDao.findRecentPosts(id);
+
+  return {
+    post: toPostSummary(post),
+    prevPost: prev ? toPostSummary(prev) : null,
+    nextPost: next ? toPostSummary(next) : null,
+    recentPosts: recentPosts.map(toPostSummary),
+  };
+};

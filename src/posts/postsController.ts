@@ -31,3 +31,13 @@ export const getTagList = catchAsync(async (req: Request, res: Response) => {
   const result = await postsService.getTagList();
   res.status(200).json(result);
 });
+
+export const getPostById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await postsService.getPostById(id);
+  if (!result) {
+    res.status(404).json({ message: "포스트를 찾을 수 없습니다." });
+    return;
+  }
+  res.status(200).json(result);
+});

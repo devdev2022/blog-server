@@ -79,6 +79,54 @@ export const findAllCategories = async () => {
   return categories;
 };
 
+export const findPostById = async (id: string) => {
+  return AppDataSource.getRepository(Post)
+    .createQueryBuilder("post")
+    .leftJoinAndSelect("post.mainCategory", "mainCategory")
+    .leftJoinAndSelect("post.subCategory", "subCategory")
+    .leftJoinAndSelect("post.tags", "tags")
+    .leftJoinAndSelect("post.media", "media")
+    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .addOrderBy("media.order", "ASC")
+    .getOne();
+};
+
+export const findAdjacentPosts = async (createdAt: Date) => {
+  const repo = AppDataSource.getRepository(Post);
+
+  const prev = await repo
+    .createQueryBuilder("post")
+    .where("post.createdAt < :createdAt", { createdAt })
+    .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .orderBy("post.createdAt", "DESC")
+    .getOne();
+
+  const next = await repo
+    .createQueryBuilder("post")
+    .where("post.createdAt > :createdAt", { createdAt })
+    .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .orderBy("post.createdAt", "ASC")
+    .getOne();
+
+  return { prev, next };
+};
+
+export const findRecentPosts = async (id: string, limit = 5) => {
+  return AppDataSource.getRepository(Post)
+    .createQueryBuilder("post")
+    .leftJoinAndSelect("post.mainCategory", "mainCategory")
+    .leftJoinAndSelect("post.subCategory", "subCategory")
+    .leftJoinAndSelect("post.tags", "tags")
+    .leftJoinAndSelect("post.media", "media")
+    .where("post.id != UNHEX(REPLACE(:id, '-', ''))", { id })
+    .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .orderBy("post.createdAt", "DESC")
+    .addOrderBy("media.order", "ASC")
+    .take(limit)
+    .getMany();
+};
+
 export const findAllTags = async () => {
   const tags = await AppDataSource.getRepository(Tag)
     .createQueryBuilder("tag")

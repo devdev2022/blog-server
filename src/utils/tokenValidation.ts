@@ -36,6 +36,26 @@ export const validateAccessToken = (
   }
 };
 
+export const optionalAuth = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!) as {
+        userId: string;
+      };
+      req.userId = decoded.userId;
+    } catch {
+      // 토큰이 유효하지 않아도 통과 (비로그인 취급)
+    }
+  }
+  next();
+};
+
 export const validateTokens = async (
   req: Request,
   res: Response,

@@ -58,6 +58,15 @@ export class Comment {
   @Column({ type: "text" })
   content!: string;
 
+  @Column({
+    name: "ip_address",
+    type: "varchar",
+    length: 45,
+    nullable: true,
+    default: null,
+  })
+  ipAddress!: string | null;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
