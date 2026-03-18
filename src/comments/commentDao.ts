@@ -23,6 +23,7 @@ export const createComment = async (data: {
   password: string;
   content: string;
   avatarUrl: string | null;
+  githubId: number | null;
   ipAddress: string | null;
 }) => {
   const repo = AppDataSource.getRepository(Comment);
@@ -33,6 +34,7 @@ export const createComment = async (data: {
     password: data.password,
     content: data.content,
     avatarUrl: data.avatarUrl,
+    githubId: data.githubId,
     ipAddress: data.ipAddress,
   });
   return repo.save(comment);

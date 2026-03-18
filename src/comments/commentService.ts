@@ -25,6 +25,7 @@ export const createComment = async (data: {
   password: string;
   content: string;
   avatarUrl: string | null;
+  githubId: number | null;
   ipAddress: string | null;
 }) => {
   const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
@@ -48,13 +49,19 @@ export const editComment = async (
   id: string,
   content: string,
   password?: string,
-  isOwner = false,
+  githubId?: number,
 ): Promise<boolean> => {
-  if (!isOwner) {
+  const comment = await commentDao.findById(id);
+  if (!comment) return false;
+
+  if (githubId && Number(comment.githubId) === githubId) {
+    // 본인 댓글: github_id 일치 확인
+  } else {
     if (!password) return false;
     const ok = await verifyPassword(id, password);
     if (!ok) return false;
   }
+
   await commentDao.updateComment(id, content);
   return true;
 };
@@ -62,13 +69,19 @@ export const editComment = async (
 export const removeComment = async (
   id: string,
   password?: string,
-  isOwner = false,
+  githubId?: number,
 ): Promise<boolean> => {
-  if (!isOwner) {
+  const comment = await commentDao.findById(id);
+  if (!comment) return false;
+
+  if (githubId && Number(comment.githubId) === githubId) {
+    // 본인 댓글: github_id 일치 확인
+  } else {
     if (!password) return false;
     const ok = await verifyPassword(id, password);
     if (!ok) return false;
   }
+
   await commentDao.deleteComment(id);
   return true;
 };

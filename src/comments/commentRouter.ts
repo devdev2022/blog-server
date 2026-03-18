@@ -7,8 +7,8 @@ const router = Router();
 // 포스트 댓글 목록 조회
 router.get("/:postId", commentController.getComments);
 
-// 댓글 작성
-router.post("/:postId", commentController.createComment);
+// 댓글 작성 (로그인 유저는 github_id 저장)
+router.post("/:postId", optionalAuth, commentController.createComment);
 
 // 비밀번호 확인
 router.post("/:id/verify-password", commentController.verifyPassword);

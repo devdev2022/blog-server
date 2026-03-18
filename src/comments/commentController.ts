@@ -33,6 +33,7 @@ export const createComment = catchAsync(async (req: Request, res: Response) => {
     password: password.trim(),
     content: content.trim(),
     avatarUrl: avatarUrl ?? null,
+    githubId: req.userId ? Number(req.userId) : null,
     ipAddress,
   });
   res.status(201).json(result);
@@ -50,24 +51,19 @@ export const verifyPassword = catchAsync(
 export const editComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password, content } = req.body;
-  const isOwner = !!req.userId;
+  const githubId = req.userId ? Number(req.userId) : undefined;
 
   if (!content?.trim()) {
     res.status(400).json({ message: "내용은 필수입니다." });
     return;
   }
 
-  if (!isOwner && !password?.trim()) {
+  if (!githubId && !password?.trim()) {
     res.status(400).json({ message: "비밀번호는 필수입니다." });
     return;
   }
 
-  const ok = await commentService.editComment(
-    id,
-    content.trim(),
-    password?.trim(),
-    isOwner,
-  );
+  const ok = await commentService.editComment(id, content.trim(), password?.trim(), githubId);
   if (!ok) {
     res.status(403).json({ message: "비밀번호가 일치하지 않습니다." });
     return;
@@ -78,9 +74,9 @@ export const editComment = catchAsync(async (req: Request, res: Response) => {
 export const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password } = req.body;
-  const isOwner = !!req.userId;
+  const githubId = req.userId ? Number(req.userId) : undefined;
 
-  const ok = await commentService.removeComment(id, password, isOwner);
+  const ok = await commentService.removeComment(id, password, githubId);
   if (!ok) {
     res.status(403).json({ message: "비밀번호가 일치하지 않습니다." });
     return;

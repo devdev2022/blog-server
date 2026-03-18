@@ -59,6 +59,14 @@ export class Comment {
   content!: string;
 
   @Column({
+    name: "github_id",
+    type: "bigint",
+    nullable: true,
+    default: null,
+  })
+  githubId!: number | null;
+
+  @Column({
     name: "ip_address",
     type: "varchar",
     length: 45,
