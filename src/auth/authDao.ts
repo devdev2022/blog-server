@@ -17,7 +17,7 @@ export const createUser = async (
   const user = userRepo.create({
     github_id: githubId,
     username,
-    avatar_url: avatarUrl,
+    profileAvatar: avatarUrl,
   });
   return userRepo.save(user);
 };

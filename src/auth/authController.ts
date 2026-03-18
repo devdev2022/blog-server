@@ -46,7 +46,7 @@ export const refreshAccessToken = catchAsync(
     );
     res.status(200).json({
       accessToken,
-      user: { github_id: user.github_id, username: user.username, avatar_url: user.avatar_url },
+      user: { github_id: user.github_id, username: user.username, profile_avatar: user.profileAvatar },
     });
   },
 );

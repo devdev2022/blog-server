@@ -31,8 +31,24 @@ export class User {
   @Column()
   username!: string;
 
-  @Column({ nullable: true })
-  avatar_url?: string;
+  @Column({ type: "varchar", length: 100, default: "개발자" })
+  role!: string;
+
+  @Column({
+    name: "profile_avatar",
+    type: "text",
+    nullable: true,
+    default: null,
+  })
+  profileAvatar?: string | null;
+
+  @Column({
+    name: "bio_avatar",
+    type: "text",
+    nullable: true,
+    default: null,
+  })
+  bioAvatar?: string | null;
 
   @Column({ type: "varchar", length: 500, nullable: true, default: null })
   bio?: string | null;
