@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import * as commentDao from "./commentDao";
 
+const BLOG_OWNER_GITHUB_ID = Number(process.env.BLOG_OWNER_GITHUB_ID);
+
 const SALT_ROUNDS = 10;
 
 const toResponse = (comment: any) => ({
@@ -11,6 +13,7 @@ const toResponse = (comment: any) => ({
   content: comment.content,
   createdAt: comment.createdAt,
   editedAt: comment.editedAt ?? null,
+  isOwnerComment: (!!comment.githubId && Number(comment.githubId) === BLOG_OWNER_GITHUB_ID) || !!comment.avatarUrl,
 });
 
 export const getComments = async (postId: string) => {
@@ -54,8 +57,9 @@ export const editComment = async (
   const comment = await commentDao.findById(id);
   if (!comment) return false;
 
-  if (githubId && Number(comment.githubId) === githubId) {
-    // 본인 댓글: github_id 일치 확인
+  const isOwner = githubId === BLOG_OWNER_GITHUB_ID;
+  if (isOwner || (githubId && Number(comment.githubId) === githubId)) {
+    // 블로그 오너이거나 본인 댓글: 비밀번호 없이 수정 가능
   } else {
     if (!password) return false;
     const ok = await verifyPassword(id, password);
@@ -74,8 +78,9 @@ export const removeComment = async (
   const comment = await commentDao.findById(id);
   if (!comment) return false;
 
-  if (githubId && Number(comment.githubId) === githubId) {
-    // 본인 댓글: github_id 일치 확인
+  const isOwner = githubId === BLOG_OWNER_GITHUB_ID;
+  if (isOwner || (githubId && Number(comment.githubId) === githubId)) {
+    // 블로그 오너이거나 본인 댓글: 비밀번호 없이 삭제 가능
   } else {
     if (!password) return false;
     const ok = await verifyPassword(id, password);

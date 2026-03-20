@@ -1,7 +1,14 @@
 import { Request, Response } from "express";
 import * as commentService from "./commentService";
+import * as authDao from "../auth/authDao";
 import { catchAsync } from "../utils/error";
 import { sseManager } from "../notifications/sseManager";
+
+async function resolveGithubId(userId?: string): Promise<number | undefined> {
+  if (!userId) return undefined;
+  const user = await authDao.findUserById(userId);
+  return user?.github_id ? Number(user.github_id) : undefined;
+}
 
 export const getComments = catchAsync(async (req: Request, res: Response) => {
   const { postId } = req.params;
@@ -35,7 +42,7 @@ export const createComment = catchAsync(async (req: Request, res: Response) => {
     password: password.trim(),
     content: content.trim(),
     avatarUrl: avatarUrl ?? null,
-    githubId: req.userId ? Number(req.userId) : null,
+    githubId: await resolveGithubId(req.userId) ?? null,
     ipAddress,
   });
 
@@ -68,7 +75,7 @@ export const editComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password, content } = req.body;
 
-  const githubId = req.userId ? Number(req.userId) : undefined;
+  const githubId = await resolveGithubId(req.userId);
 
   if (!content?.trim()) {
     res.status(400).json({ message: "내용은 필수입니다." });
@@ -92,7 +99,7 @@ export const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password } = req.body;
 
-  const githubId = req.userId ? Number(req.userId) : undefined;
+  const githubId = await resolveGithubId(req.userId);
 
   const ok = await commentService.removeComment(id, password, githubId);
   if (!ok) {
