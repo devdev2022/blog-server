@@ -15,4 +15,7 @@ router.get("/", postsController.getPostList);
 // 포스트 상세 조회
 router.get("/:id", postsController.getPostById);
 
+// 포스트 수정
+router.put("/:id", postsController.updatePost);
+
 export default router;

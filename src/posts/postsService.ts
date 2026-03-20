@@ -104,6 +104,44 @@ const toPostSummary = (post: any) => ({
   })),
 });
 
+export const updatePost = async (
+  id: string,
+  data: { title: string; content: string; categorySlug: string; tags: string[] },
+) => {
+  const existing = await postsDao.findPostById(id);
+  if (!existing) return null;
+
+  const parts = data.categorySlug.split("/");
+  const mainName = parts[0];
+  const subName = parts[1];
+
+  const mainCategory = mainName
+    ? await postsDao.findMainCategoryByName(mainName)
+    : null;
+  if (!mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
+
+  let subCategoryId: string | null = null;
+  if (subName) {
+    const subCategory = await postsDao.findSubCategoryByName(
+      subName,
+      mainCategory.id,
+    );
+    subCategoryId = subCategory?.id ?? null;
+  }
+
+  await postsDao.updatePost(id, {
+    title: data.title,
+    content: data.content,
+    mainCategoryId: mainCategory.id,
+    subCategoryId,
+  });
+
+  const tags = await postsDao.findOrCreateTags(data.tags);
+  await postsDao.replacePostTags(id, tags.map((t) => t.id));
+
+  return true;
+};
+
 export const getPostById = async (id: string) => {
   const post = await postsDao.findPostById(id);
   if (!post) return null;

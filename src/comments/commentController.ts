@@ -1,9 +1,15 @@
 import { Request, Response } from "express";
 import * as commentService from "./commentService";
-import { catchAsync } from "../utils/error";
+import { catchAsync, isValidUUID } from "../utils/error";
 
 export const getComments = catchAsync(async (req: Request, res: Response) => {
   const { postId } = req.params;
+
+  if (!isValidUUID(postId)) {
+    res.status(400).json({ message: "유효하지 않은 포스트 ID입니다." });
+    return;
+  }
+
   const result = await commentService.getComments(postId);
   res.status(200).json(result);
 });
@@ -11,6 +17,16 @@ export const getComments = catchAsync(async (req: Request, res: Response) => {
 export const createComment = catchAsync(async (req: Request, res: Response) => {
   const { postId } = req.params;
   const { parentId, nickname, password, content, avatarUrl } = req.body;
+
+  if (!isValidUUID(postId)) {
+    res.status(400).json({ message: "유효하지 않은 포스트 ID입니다." });
+    return;
+  }
+
+  if (parentId && !isValidUUID(parentId)) {
+    res.status(400).json({ message: "유효하지 않은 댓글 ID입니다." });
+    return;
+  }
 
   if (!nickname?.trim() || !password?.trim() || !content?.trim()) {
     res.status(400).json({ message: "닉네임, 비밀번호, 내용은 필수입니다." });
@@ -43,6 +59,12 @@ export const verifyPassword = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { password } = req.body;
+
+    if (!isValidUUID(id)) {
+      res.status(400).json({ message: "유효하지 않은 댓글 ID입니다." });
+      return;
+    }
+
     const ok = await commentService.verifyPassword(id, password);
     res.status(200).json({ ok });
   },
@@ -51,6 +73,11 @@ export const verifyPassword = catchAsync(
 export const editComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password, content } = req.body;
+
+  if (!isValidUUID(id)) {
+    res.status(400).json({ message: "유효하지 않은 댓글 ID입니다." });
+    return;
+  }
   const githubId = req.userId ? Number(req.userId) : undefined;
 
   if (!content?.trim()) {
@@ -74,6 +101,11 @@ export const editComment = catchAsync(async (req: Request, res: Response) => {
 export const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { password } = req.body;
+
+  if (!isValidUUID(id)) {
+    res.status(400).json({ message: "유효하지 않은 댓글 ID입니다." });
+    return;
+  }
   const githubId = req.userId ? Number(req.userId) : undefined;
 
   const ok = await commentService.removeComment(id, password, githubId);

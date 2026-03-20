@@ -1,6 +1,7 @@
 import { AppDataSource } from "../../data-source";
 import { Post } from "../../entity/Posts";
 import { MainCategory } from "../../entity/MainCategory";
+import { SubCategory } from "../../entity/SubCategory";
 import { Tag } from "../../entity/Tag";
 
 interface FindPostsParams {
@@ -125,6 +126,68 @@ export const findRecentPosts = async (id: string, limit = 5) => {
     .addOrderBy("media.order", "ASC")
     .take(limit)
     .getMany();
+};
+
+export const findMainCategoryByName = async (name: string) => {
+  return AppDataSource.getRepository(MainCategory).findOne({ where: { name } });
+};
+
+export const findSubCategoryByName = async (
+  name: string,
+  mainCategoryId: string,
+) => {
+  return AppDataSource.getRepository(SubCategory).findOne({
+    where: { name, mainCategory: { id: mainCategoryId } },
+  });
+};
+
+export const updatePost = async (
+  id: string,
+  data: {
+    title: string;
+    content: string;
+    mainCategoryId: string;
+    subCategoryId: string | null;
+  },
+) => {
+  if (data.subCategoryId) {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')), edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
+    );
+  } else {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL, edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      [data.title, data.content, data.mainCategoryId, id],
+    );
+  }
+};
+
+export const findOrCreateTags = async (names: string[]) => {
+  const tagRepo = AppDataSource.getRepository(Tag);
+  const tags = [];
+  for (const name of names) {
+    let tag = await tagRepo.findOne({ where: { name } });
+    if (!tag) {
+      tag = tagRepo.create({ name });
+      await tagRepo.save(tag);
+    }
+    tags.push(tag);
+  }
+  return tags;
+};
+
+export const replacePostTags = async (postId: string, tagIds: string[]) => {
+  await AppDataSource.query(
+    `DELETE FROM post_tags WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    [postId],
+  );
+  for (const tagId of tagIds) {
+    await AppDataSource.query(
+      `INSERT INTO post_tags (post_id, tag_id) VALUES (UNHEX(REPLACE(?, '-', '')), UNHEX(REPLACE(?, '-', '')))`,
+      [postId, tagId],
+    );
+  }
 };
 
 export const findAllTags = async () => {
