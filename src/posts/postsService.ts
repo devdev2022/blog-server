@@ -248,6 +248,13 @@ export const updateDraft = async (
   return true;
 };
 
+export const deletePost = async (id: string) => {
+  const existing = await postsDao.findPostById(id);
+  if (!existing) return null;
+  await postsDao.deletePost(id);
+  return true;
+};
+
 export const getPostById = async (id: string) => {
   const post = await postsDao.findPostById(id);
   if (!post) return null;

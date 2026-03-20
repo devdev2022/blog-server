@@ -152,6 +152,16 @@ export const updateDraft = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ message: "임시저장이 수정되었습니다." });
 });
 
+export const deletePost = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await postsService.deletePost(id);
+  if (!result) {
+    res.status(404).json({ message: "포스트를 찾을 수 없습니다." });
+    return;
+  }
+  res.status(200).json({ message: "포스트가 삭제되었습니다." });
+});
+
 export const getPostById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 

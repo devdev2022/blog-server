@@ -275,6 +275,13 @@ export const updateDraftPost = async (
   }
 };
 
+export const deletePost = async (id: string) => {
+  await AppDataSource.query(
+    `DELETE FROM posts WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 0`,
+    [id],
+  );
+};
+
 export const findTotalPostCount = async () => {
   const [{ count }] = await AppDataSource.query(
     `SELECT COUNT(*) as count FROM posts WHERE is_suspended = 0 AND temp = 0`,

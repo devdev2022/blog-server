@@ -28,4 +28,7 @@ router.get("/:id", postsController.getPostById);
 // 포스트 수정
 router.put("/:id", postsController.updatePost);
 
+// 포스트 삭제
+router.delete("/:id", validateAccessToken, postsController.deletePost);
+
 export default router;
