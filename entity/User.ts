@@ -54,6 +54,27 @@ export class User {
   bio?: string | null;
 
   @Column({
+    name: "blog_nickname",
+    type: "varchar",
+    length: 30,
+    nullable: true,
+    default: null,
+    unique: true,
+  })
+  blogNickname?: string | null;
+
+  @Column({ type: "boolean", default: false })
+  withdrawal!: boolean;
+
+  @Column({
+    name: "withdrawal_date",
+    type: "timestamp",
+    nullable: true,
+    default: null,
+  })
+  withdrawalDate!: Date | null;
+
+  @Column({
     name: "notification_read_at",
     type: "timestamp",
     nullable: true,

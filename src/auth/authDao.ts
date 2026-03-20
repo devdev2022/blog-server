@@ -8,6 +8,7 @@ export const findUserByGithubId = async (githubId: number) => {
   });
 };
 
+
 export const createUser = async (
   githubId: number,
   username: string,
@@ -18,8 +19,30 @@ export const createUser = async (
     github_id: githubId,
     username,
     profileAvatar: avatarUrl,
+    blogNickname: null,
   });
   return userRepo.save(user);
+};
+
+export const reactivateUser = async (
+  userId: string,
+  username: string,
+  avatarUrl: string
+) => {
+  await AppDataSource.query(
+    `UPDATE users
+     SET username = ?, profile_avatar = ?, blog_nickname = ?,
+         bio = NULL, bio_avatar = NULL,
+         withdrawal = 0, withdrawal_date = NULL
+     WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+    [
+      username,
+      avatarUrl,
+      null,
+      userId,
+    ]
+  );
+  return AppDataSource.getRepository(User).findOne({ where: { id: userId } });
 };
 
 export const saveRefreshToken = async (userId: string, token: string) => {

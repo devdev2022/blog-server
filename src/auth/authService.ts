@@ -66,9 +66,15 @@ export const githubLogin = async (code: string) => {
   let user = await authDao.findUserByGithubId(githubUser.id);
   const isNewUser = !user;
 
-  if (isNewUser) {
+  if (!user) {
     user = await authDao.createUser(
       githubUser.id,
+      githubUser.login,
+      githubUser.avatar_url
+    );
+  } else if (user.withdrawal) {
+    user = await authDao.reactivateUser(
+      user.id,
       githubUser.login,
       githubUser.avatar_url
     );
