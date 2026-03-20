@@ -106,13 +106,14 @@ export class Post {
     name: "main_category_id",
     type: "binary",
     length: 16,
+    nullable: true,
     transformer: uuidTransformer,
   })
-  mainCategoryId!: string;
+  mainCategoryId!: string | null;
 
-  @ManyToOne(() => MainCategory)
+  @ManyToOne(() => MainCategory, { nullable: true })
   @JoinColumn({ name: "main_category_id" })
-  mainCategory!: MainCategory;
+  mainCategory!: MainCategory | null;
 
   @Column({
     name: "sub_category_id",

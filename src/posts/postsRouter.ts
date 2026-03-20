@@ -16,6 +16,9 @@ router.post("/drafts", validateAccessToken, postsController.createDraft);
 // 임시저장 수정
 router.put("/drafts/:id", validateAccessToken, postsController.updateDraft);
 
+// 포스트 작성
+router.post("/", validateAccessToken, postsController.createPost);
+
 // 포스트 목록 조회 (페이지네이션, 카테고리/태그 필터링)
 router.get("/", postsController.getPostList);
 

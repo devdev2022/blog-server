@@ -56,21 +56,26 @@ interface MainCategoryWithCount extends MainCategory {
 }
 
 export const getCategoryList = async () => {
-  const categories =
-    (await postsDao.findAllCategories()) as MainCategoryWithCount[];
+  const [categories, total] = await Promise.all([
+    postsDao.findAllCategories() as Promise<MainCategoryWithCount[]>,
+    postsDao.findTotalPostCount(),
+  ]);
 
-  return categories.map((main) => ({
-    id: main.id,
-    name: main.name,
-    slug: main.name,
-    postCount: main.postCount ?? 0,
-    subCategories: main.subCategories.map((sub) => ({
-      id: sub.id,
-      name: sub.name,
-      slug: `${main.name}/${sub.name}`,
-      postCount: sub.postCount ?? 0,
+  return {
+    total,
+    categories: categories.map((main) => ({
+      id: main.id,
+      name: main.name,
+      slug: main.name,
+      postCount: main.postCount ?? 0,
+      subCategories: main.subCategories.map((sub) => ({
+        id: sub.id,
+        name: sub.name,
+        slug: `${main.name}/${sub.name}`,
+        postCount: sub.postCount ?? 0,
+      })),
     })),
-  }));
+  };
 };
 
 export const getTagList = async () => {
@@ -78,7 +83,7 @@ export const getTagList = async () => {
 };
 
 const toPostSummary = (post: any) => ({
-  id: post.id.replaceAll("-", ""),
+  id: post.id,
   title: post.title,
   content: post.content,
   createdAt: post.createdAt,
@@ -118,10 +123,10 @@ export const updatePost = async (
   const mainCategory = mainName
     ? await postsDao.findMainCategoryByName(mainName)
     : null;
-  if (!mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
+  if (mainName && !mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
 
   let subCategoryId: string | null = null;
-  if (subName) {
+  if (subName && mainCategory) {
     const subCategory = await postsDao.findSubCategoryByName(
       subName,
       mainCategory.id,
@@ -132,7 +137,7 @@ export const updatePost = async (
   await postsDao.updatePost(id, {
     title: data.title,
     content: data.content,
-    mainCategoryId: mainCategory.id,
+    mainCategoryId: mainCategory?.id ?? null,
     subCategoryId,
   });
 
@@ -140,6 +145,39 @@ export const updatePost = async (
   await postsDao.replacePostTags(id, tags.map((t) => t.id));
 
   return true;
+};
+
+export const createPost = async (
+  userId: string,
+  data: { title: string; content: string; categorySlug: string; tags: string[] },
+) => {
+  const parts = data.categorySlug.split("/");
+  const mainName = parts[0];
+  const subName = parts[1];
+
+  const mainCategory = mainName
+    ? await postsDao.findMainCategoryByName(mainName)
+    : null;
+  if (mainName && !mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
+
+  let subCategoryId: string | null = null;
+  if (subName && mainCategory) {
+    const subCategory = await postsDao.findSubCategoryByName(subName, mainCategory.id);
+    subCategoryId = subCategory?.id ?? null;
+  }
+
+  const post = await postsDao.createPost({
+    userId,
+    title: data.title,
+    content: data.content,
+    mainCategoryId: mainCategory?.id ?? null,
+    subCategoryId,
+  });
+
+  const tags = await postsDao.findOrCreateTags(data.tags);
+  await postsDao.replacePostTags(post.id, tags.map((t) => t.id));
+
+  return { id: post.id };
 };
 
 export const createDraft = async (
@@ -153,10 +191,10 @@ export const createDraft = async (
   const mainCategory = mainName
     ? await postsDao.findMainCategoryByName(mainName)
     : null;
-  if (!mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
+  if (mainName && !mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
 
   let subCategoryId: string | null = null;
-  if (subName) {
+  if (subName && mainCategory) {
     const subCategory = await postsDao.findSubCategoryByName(subName, mainCategory.id);
     subCategoryId = subCategory?.id ?? null;
   }
@@ -165,7 +203,7 @@ export const createDraft = async (
     userId,
     title: data.title,
     content: data.content,
-    mainCategoryId: mainCategory.id,
+    mainCategoryId: mainCategory?.id ?? null,
     subCategoryId,
   });
 
@@ -189,10 +227,10 @@ export const updateDraft = async (
   const mainCategory = mainName
     ? await postsDao.findMainCategoryByName(mainName)
     : null;
-  if (!mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
+  if (mainName && !mainCategory) throw new Error("카테고리를 찾을 수 없습니다.");
 
   let subCategoryId: string | null = null;
-  if (subName) {
+  if (subName && mainCategory) {
     const subCategory = await postsDao.findSubCategoryByName(subName, mainCategory.id);
     subCategoryId = subCategory?.id ?? null;
   }
@@ -200,7 +238,7 @@ export const updateDraft = async (
   await postsDao.updateDraftPost(id, {
     title: data.title,
     content: data.content,
-    mainCategoryId: mainCategory.id,
+    mainCategoryId: mainCategory?.id ?? null,
     subCategoryId,
   });
 

@@ -153,19 +153,24 @@ export const updatePost = async (
   data: {
     title: string;
     content: string;
-    mainCategoryId: string;
+    mainCategoryId: string | null;
     subCategoryId: string | null;
   },
 ) => {
-  if (data.subCategoryId) {
+  if (data.mainCategoryId && data.subCategoryId) {
     await AppDataSource.query(
       `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')), edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
       [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
     );
-  } else {
+  } else if (data.mainCategoryId) {
     await AppDataSource.query(
       `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL, edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
       [data.title, data.content, data.mainCategoryId, id],
+    );
+  } else {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = NULL, sub_category_id = NULL, edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      [data.title, data.content, id],
     );
   }
 };
@@ -201,7 +206,7 @@ export const createDraft = async (data: {
   userId: string;
   title: string;
   content: string;
-  mainCategoryId: string;
+  mainCategoryId: string | null;
   subCategoryId: string | null;
 }) => {
   const repo = AppDataSource.getRepository(Post);
@@ -214,6 +219,25 @@ export const createDraft = async (data: {
     temp: true,
   });
   return repo.save(draft);
+};
+
+export const createPost = async (data: {
+  userId: string;
+  title: string;
+  content: string;
+  mainCategoryId: string | null;
+  subCategoryId: string | null;
+}) => {
+  const repo = AppDataSource.getRepository(Post);
+  const post = repo.create({
+    userId: data.userId,
+    title: data.title,
+    content: data.content,
+    mainCategoryId: data.mainCategoryId,
+    subCategoryId: data.subCategoryId,
+    temp: false,
+  });
+  return repo.save(post);
 };
 
 export const findDraftById = async (id: string) => {
@@ -229,21 +253,33 @@ export const updateDraftPost = async (
   data: {
     title: string;
     content: string;
-    mainCategoryId: string;
+    mainCategoryId: string | null;
     subCategoryId: string | null;
   },
 ) => {
-  if (data.subCategoryId) {
+  if (data.mainCategoryId && data.subCategoryId) {
     await AppDataSource.query(
       `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')) WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
       [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
     );
-  } else {
+  } else if (data.mainCategoryId) {
     await AppDataSource.query(
       `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
       [data.title, data.content, data.mainCategoryId, id],
     );
+  } else {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = NULL, sub_category_id = NULL WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      [data.title, data.content, id],
+    );
   }
+};
+
+export const findTotalPostCount = async () => {
+  const [{ count }] = await AppDataSource.query(
+    `SELECT COUNT(*) as count FROM posts WHERE is_suspended = 0 AND temp = 0`,
+  );
+  return parseInt(count as string, 10);
 };
 
 export const findAllTags = async () => {

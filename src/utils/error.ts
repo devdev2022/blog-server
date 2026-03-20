@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export const isValidUUID = (id: string): boolean => UUID_REGEX.test(id);
-
 export const customError = (message: string, statusCode: number): never => {
   const error: any = new Error(message);
   error.statusCode = statusCode;
