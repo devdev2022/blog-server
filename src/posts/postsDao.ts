@@ -22,6 +22,7 @@ export const findPosts = async (params: FindPostsParams) => {
     .leftJoinAndSelect("post.tags", "tags")
     .leftJoinAndSelect("post.media", "media")
     .where("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
     .addOrderBy("media.order", "ASC")
     .skip((page - 1) * limit)
@@ -61,7 +62,8 @@ export const findAllCategories = async () => {
       `SELECT COUNT(*) as count FROM posts
        WHERE main_category_id = UNHEX(REPLACE(?, '-', ''))
        AND sub_category_id IS NULL
-       AND is_suspended = 0`,
+       AND is_suspended = 0
+       AND temp = 0`,
       [main.id],
     );
     (main as any).postCount = parseInt(mainCount as string, 10);
@@ -70,7 +72,8 @@ export const findAllCategories = async () => {
       const [{ count }] = await AppDataSource.query(
         `SELECT COUNT(*) as count FROM posts
          WHERE sub_category_id = UNHEX(REPLACE(?, '-', ''))
-         AND is_suspended = 0`,
+         AND is_suspended = 0
+         AND temp = 0`,
         [sub.id],
       );
       (sub as any).postCount = parseInt(count as string, 10);
@@ -89,6 +92,7 @@ export const findPostById = async (id: string) => {
     .leftJoinAndSelect("post.media", "media")
     .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .addOrderBy("media.order", "ASC")
     .getOne();
 };
@@ -100,6 +104,7 @@ export const findAdjacentPosts = async (createdAt: Date) => {
     .createQueryBuilder("post")
     .where("post.createdAt < :createdAt", { createdAt })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
     .getOne();
 
@@ -107,6 +112,7 @@ export const findAdjacentPosts = async (createdAt: Date) => {
     .createQueryBuilder("post")
     .where("post.createdAt > :createdAt", { createdAt })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "ASC")
     .getOne();
 
@@ -122,6 +128,7 @@ export const findRecentPosts = async (id: string, limit = 5) => {
     .leftJoinAndSelect("post.media", "media")
     .where("post.id != UNHEX(REPLACE(:id, '-', ''))", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
     .addOrderBy("media.order", "ASC")
     .take(limit)
@@ -186,6 +193,55 @@ export const replacePostTags = async (postId: string, tagIds: string[]) => {
     await AppDataSource.query(
       `INSERT INTO post_tags (post_id, tag_id) VALUES (UNHEX(REPLACE(?, '-', '')), UNHEX(REPLACE(?, '-', '')))`,
       [postId, tagId],
+    );
+  }
+};
+
+export const createDraft = async (data: {
+  userId: string;
+  title: string;
+  content: string;
+  mainCategoryId: string;
+  subCategoryId: string | null;
+}) => {
+  const repo = AppDataSource.getRepository(Post);
+  const draft = repo.create({
+    userId: data.userId,
+    title: data.title,
+    content: data.content,
+    mainCategoryId: data.mainCategoryId,
+    subCategoryId: data.subCategoryId,
+    temp: true,
+  });
+  return repo.save(draft);
+};
+
+export const findDraftById = async (id: string) => {
+  return AppDataSource.getRepository(Post)
+    .createQueryBuilder("post")
+    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .andWhere("post.temp = :temp", { temp: true })
+    .getOne();
+};
+
+export const updateDraftPost = async (
+  id: string,
+  data: {
+    title: string;
+    content: string;
+    mainCategoryId: string;
+    subCategoryId: string | null;
+  },
+) => {
+  if (data.subCategoryId) {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')) WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
+    );
+  } else {
+    await AppDataSource.query(
+      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      [data.title, data.content, data.mainCategoryId, id],
     );
   }
 };

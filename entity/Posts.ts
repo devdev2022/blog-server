@@ -56,6 +56,9 @@ export class Post {
   @Column({ name: "is_suspended", type: "boolean", default: false })
   isSuspended!: boolean;
 
+  @Column({ name: "temp", type: "boolean", default: false })
+  temp!: boolean;
+
   @Column({
     name: "suspended_at",
     type: "timestamp",
