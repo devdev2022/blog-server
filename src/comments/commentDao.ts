@@ -52,6 +52,19 @@ export const updateComment = async (
     .execute();
 };
 
+export const findCommentsSince = async (since: Date | null) => {
+  const qb = AppDataSource.getRepository(Comment)
+    .createQueryBuilder("comment")
+    .where("comment.githubId IS NULL")
+    .orderBy("comment.createdAt", "DESC");
+
+  if (since) {
+    qb.andWhere("comment.createdAt > :since", { since });
+  }
+
+  return qb.getMany();
+};
+
 export const deleteComment = async (id: string) => {
   await AppDataSource.getRepository(Comment)
     .createQueryBuilder()

@@ -53,6 +53,14 @@ export class User {
   @Column({ type: "varchar", length: 500, nullable: true, default: null })
   bio?: string | null;
 
+  @Column({
+    name: "notification_read_at",
+    type: "timestamp",
+    nullable: true,
+    default: null,
+  })
+  notificationReadAt!: Date | null;
+
   @CreateDateColumn()
   created_at!: Date;
 

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as commentService from "./commentService";
 import { catchAsync } from "../utils/error";
+import { sseManager } from "../notifications/sseManager";
 
 export const getComments = catchAsync(async (req: Request, res: Response) => {
   const { postId } = req.params;
@@ -37,6 +38,19 @@ export const createComment = catchAsync(async (req: Request, res: Response) => {
     githubId: req.userId ? Number(req.userId) : null,
     ipAddress,
   });
+
+  // 오너 본인 댓글이 아닐 때만 알림 브로드캐스트
+  if (!req.userId) {
+    sseManager.broadcast("notification", {
+      id: result.id,
+      postId: postId.replaceAll("-", ""),
+      parentId: result.parentId,
+      nickname: result.nickname,
+      content: result.content,
+      createdAt: result.createdAt,
+    });
+  }
+
   res.status(201).json(result);
 });
 
