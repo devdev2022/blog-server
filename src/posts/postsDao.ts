@@ -346,16 +346,8 @@ export const replacePostMedia = async (
   const newUrls = new Set(mediaList.map((m) => m.url));
   const removed = existing.filter((m) => !newUrls.has(m.url));
 
-  for (const m of removed) {
-    const [{ count }] = await AppDataSource.query(
-      `SELECT COUNT(*) as count FROM post_media
-       WHERE url = $1 AND post_id != $2`,
-      [m.url, postId],
-    );
-    if (parseInt(count as string, 10) === 0) {
-      await deleteFromR2(m.url);
-    }
-  }
+  const urlsToDelete = await filterUnsharedUrls(postId, removed.map((m) => m.url));
+  await Promise.all(urlsToDelete.map(deleteFromR2));
 
   await AppDataSource.query(
     `DELETE FROM post_media WHERE post_id = $1`,
