@@ -152,6 +152,27 @@ export const updateDraft = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ message: "임시저장이 수정되었습니다." });
 });
 
+export const deleteDraft = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await postsService.deleteDraft(id, req.userId!);
+  res.status(200).json({ message: "임시저장이 삭제되었습니다." });
+});
+
+export const getDraftList = catchAsync(async (req: Request, res: Response) => {
+  const result = await postsService.getDraftList(req.userId!);
+  res.status(200).json(result);
+});
+
+export const getDraftById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await postsService.getDraftById(id, req.userId!);
+  if (!result) {
+    res.status(404).json({ message: "임시저장을 찾을 수 없습니다." });
+    return;
+  }
+  res.status(200).json(result);
+});
+
 export const deletePost = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await postsService.deletePost(id);

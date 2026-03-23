@@ -248,6 +248,42 @@ export const updateDraft = async (
   return true;
 };
 
+export const deleteDraft = async (id: string, userId: string) => {
+  await postsDao.deleteDraftByIdAndUserId(id, userId);
+};
+
+export const getDraftList = async (userId: string) => {
+  const drafts = await postsDao.findDraftsByUserId(userId);
+  return {
+    total: drafts.length,
+    drafts: drafts.map((draft) => ({
+      id: draft.id,
+      title: draft.title,
+      createdAt: draft.createdAt,
+    })),
+  };
+};
+
+export const getDraftById = async (id: string, userId: string) => {
+  const draft = await postsDao.findDraftByIdAndUserId(id, userId);
+  if (!draft) return null;
+
+  const categorySlug = draft.mainCategory
+    ? draft.subCategory
+      ? `${draft.mainCategory.name}/${draft.subCategory.name}`
+      : draft.mainCategory.name
+    : '';
+
+  return {
+    id: draft.id,
+    title: draft.title,
+    content: draft.content,
+    categorySlug,
+    tags: (draft.tags ?? []).map((tag: any) => tag.name),
+    createdAt: draft.createdAt,
+  };
+};
+
 export const deletePost = async (id: string) => {
   const existing = await postsDao.findPostById(id);
   if (!existing) return null;

@@ -289,6 +289,34 @@ export const findTotalPostCount = async () => {
   return parseInt(count as string, 10);
 };
 
+export const deleteDraftByIdAndUserId = async (id: string, userId: string) => {
+  await AppDataSource.query(
+    `DELETE FROM posts WHERE id = UNHEX(REPLACE(?, '-', '')) AND user_id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+    [id, userId],
+  );
+};
+
+export const findDraftsByUserId = async (userId: string) => {
+  return AppDataSource.getRepository(Post)
+    .createQueryBuilder("post")
+    .where("post.userId = UNHEX(REPLACE(:userId, '-', ''))", { userId })
+    .andWhere("post.temp = :temp", { temp: true })
+    .orderBy("post.createdAt", "DESC")
+    .getMany();
+};
+
+export const findDraftByIdAndUserId = async (id: string, userId: string) => {
+  return AppDataSource.getRepository(Post)
+    .createQueryBuilder("post")
+    .leftJoinAndSelect("post.tags", "tags")
+    .leftJoinAndSelect("post.mainCategory", "mainCategory")
+    .leftJoinAndSelect("post.subCategory", "subCategory")
+    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .andWhere("post.userId = UNHEX(REPLACE(:userId, '-', ''))", { userId })
+    .andWhere("post.temp = :temp", { temp: true })
+    .getOne();
+};
+
 export const findAllTags = async () => {
   const tags = await AppDataSource.getRepository(Tag)
     .createQueryBuilder("tag")

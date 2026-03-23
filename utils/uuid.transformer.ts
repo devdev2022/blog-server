@@ -5,8 +5,9 @@ export const toUUID = (id: string): string =>
 
 export const uuidTransformer = {
   to: (uuid: string | null) => uuid ? Buffer.from(uuid.replace(/-/g, ""), "hex") : null,
-  from: (bin: Buffer | null) => {
+  from: (bin: Buffer | string | null) => {
     if (!bin) return null;
+    if (typeof bin === "string") return bin;
     const hex = bin.toString("hex");
     return [
       hex.slice(0, 8),

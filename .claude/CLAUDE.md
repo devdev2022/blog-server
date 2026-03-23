@@ -24,3 +24,6 @@ API 제작이 완료되면 아래 순서로 테스트한다.
 - `uuidTransformer.to`는 null을 처리하지 못한다. nullable인 UUID 컬럼(예: parentId)에 null이 들어오면 런타임 에러가 발생한다.
   - 새로운 nullable UUID 컬럼을 엔티티에 추가할 때마다 `utils/uuid.transformer.ts`의 `to` 함수가 null을 처리하는지 반드시 확인한다.
   - 현재 `to: (uuid: string | null) => uuid ? Buffer.from(...) : null` 형태로 수정되어 있다.
+- `uuidTransformer.from`은 Buffer뿐 아니라 string이 들어올 수 있다. TypeORM은 `@BeforeInsert`로 UUID 문자열이 설정된 엔티티를 `repo.save()`한 뒤, `from()` transformer를 엔티티 속성에 재적용한다. 이때 Buffer가 아닌 UUID 문자열이 들어오면 `.toString("hex")`가 문자열을 그대로 반환하고, 36자 UUID 문자열을 [0:8][8:12]… 위치로 잘라 엉뚱한 곳에 `-`를 추가해 UUID가 깨진다.
+  - `from` 함수는 반드시 `typeof bin === "string"` 체크를 포함해야 한다.
+  - 현재 `from: (bin: Buffer | string | null) => { if (!bin) return null; if (typeof bin === "string") return bin; ... }` 형태로 수정되어 있다.
