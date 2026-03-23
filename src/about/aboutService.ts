@@ -1,10 +1,15 @@
 import * as aboutDao from "./aboutDao";
+import { deleteFromR2 } from "../utils/r2";
 
 export const updateBio = async (userId: string, bio: string) => {
   await aboutDao.updateBio(userId, bio);
 };
 
 export const updateAvatar = async (userId: string, avatarUrl: string) => {
+  const existing = await aboutDao.findProfile();
+  if (existing?.bioAvatar) {
+    await deleteFromR2(existing.bioAvatar);
+  }
   await aboutDao.updateAvatar(userId, avatarUrl);
 };
 

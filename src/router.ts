@@ -6,6 +6,7 @@ import mainRouter from "./main/mainRouter";
 import commentRouter from "./comments/commentRouter";
 import notificationRouter from "./notifications/notificationRouter";
 import usersRouter from "./users/usersRouter";
+import uploadRouter from "./upload/uploadRouter";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/main", mainRouter);
 router.use("/comments", commentRouter);
 router.use("/notifications", notificationRouter);
 router.use("/users", usersRouter);
+router.use("/upload", uploadRouter);
 
 export default router;

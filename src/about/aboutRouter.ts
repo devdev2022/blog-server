@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as aboutController from "./aboutController";
 import { validateAccessToken } from "../utils/tokenValidation";
-import { avatarUpload } from "../utils/upload";
+import { imageUpload } from "../utils/upload";
 
 const router = Router();
 
@@ -12,7 +12,7 @@ router.get("/profile", aboutController.getProfile);
 router.patch("/profile/bio", validateAccessToken, aboutController.updateBio);
 
 // 아바타 업로드 (인증 필요)
-router.patch("/profile/avatar", validateAccessToken, avatarUpload.single("avatar"), aboutController.updateAvatar);
+router.patch("/profile/avatar", validateAccessToken, imageUpload.single("avatar"), aboutController.updateAvatar);
 
 // 경력 목록 조회
 router.get("/work-experiences", aboutController.getWorkExperiences);

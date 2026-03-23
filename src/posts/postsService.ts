@@ -2,6 +2,29 @@ import * as postsDao from "./postsDao";
 import { MainCategory } from "../../entity/MainCategory";
 import { SubCategory } from "../../entity/SubCategory";
 
+function extractMediaFromContent(content: string) {
+  const r2Base = process.env.R2_PUBLIC_URL;
+  const media: { type: "image" | "video"; url: string; order: number }[] = [];
+  let order = 0;
+
+  const imgRegex = /<img[^>]+src="([^"]+)"/g;
+  let match;
+  while ((match = imgRegex.exec(content)) !== null) {
+    if (r2Base && match[1].startsWith(r2Base)) {
+      media.push({ type: "image", url: match[1], order: order++ });
+    }
+  }
+
+  const videoRegex = /<video[^>]+src="([^"]+)"/g;
+  while ((match = videoRegex.exec(content)) !== null) {
+    if (r2Base && match[1].startsWith(r2Base)) {
+      media.push({ type: "video", url: match[1], order: order++ });
+    }
+  }
+
+  return media;
+}
+
 interface GetPostListParams {
   page: number;
   limit: number;
@@ -144,6 +167,9 @@ export const updatePost = async (
   const tags = await postsDao.findOrCreateTags(data.tags);
   await postsDao.replacePostTags(id, tags.map((t) => t.id));
 
+  const media = extractMediaFromContent(data.content);
+  await postsDao.replacePostMedia(id, media);
+
   return true;
 };
 
@@ -176,6 +202,9 @@ export const createPost = async (
 
   const tags = await postsDao.findOrCreateTags(data.tags);
   await postsDao.replacePostTags(post.id, tags.map((t) => t.id));
+
+  const media = extractMediaFromContent(data.content);
+  await postsDao.replacePostMedia(post.id, media);
 
   return { id: post.id };
 };

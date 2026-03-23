@@ -1,8 +1,10 @@
 import { AppDataSource } from "../../data-source";
 import { Post } from "../../entity/Posts";
+import { PostMedia } from "../../entity/PostMedia";
 import { MainCategory } from "../../entity/MainCategory";
 import { SubCategory } from "../../entity/SubCategory";
 import { Tag } from "../../entity/Tag";
+import { deleteFromR2 } from "../utils/r2";
 
 interface FindPostsParams {
   page: number;
@@ -315,6 +317,40 @@ export const findDraftByIdAndUserId = async (id: string, userId: string) => {
     .andWhere("post.userId = UNHEX(REPLACE(:userId, '-', ''))", { userId })
     .andWhere("post.temp = :temp", { temp: true })
     .getOne();
+};
+
+export const replacePostMedia = async (
+  postId: string,
+  mediaList: { type: "image" | "video"; url: string; order: number }[],
+) => {
+  const existing: { url: string }[] = await AppDataSource.query(
+    `SELECT url FROM post_media WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    [postId],
+  );
+
+  const newUrls = new Set(mediaList.map((m) => m.url));
+  const removed = existing.filter((m) => !newUrls.has(m.url));
+
+  for (const m of removed) {
+    const [{ count }] = await AppDataSource.query(
+      `SELECT COUNT(*) as count FROM post_media
+       WHERE url = ? AND post_id != UNHEX(REPLACE(?, '-', ''))`,
+      [m.url, postId],
+    );
+    if (parseInt(count as string, 10) === 0) {
+      await deleteFromR2(m.url);
+    }
+  }
+
+  await AppDataSource.query(
+    `DELETE FROM post_media WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    [postId],
+  );
+  const repo = AppDataSource.getRepository(PostMedia);
+  for (const item of mediaList) {
+    const media = repo.create({ postId, type: item.type, url: item.url, order: item.order });
+    await repo.save(media);
+  }
 };
 
 export const findAllTags = async () => {

@@ -37,11 +37,11 @@ export class SideProject {
   @Column({ type: "text", nullable: true, default: null })
   description!: string | null;
 
-  @Column({ name: "start_date", type: "date" })
-  startDate!: Date;
+  @Column({ name: "start_date", type: "varchar", length: 7 })
+  startDate!: string;
 
-  @Column({ name: "end_date", type: "date", nullable: true, default: null })
-  endDate!: Date | null;
+  @Column({ name: "end_date", type: "varchar", length: 7, nullable: true, default: null })
+  endDate!: string | null;
 
   @Column({ type: "varchar", length: 500, nullable: true, default: null })
   link!: string | null;

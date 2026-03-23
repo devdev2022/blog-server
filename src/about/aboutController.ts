@@ -12,7 +12,8 @@ export const updateBio = catchAsync(async (req: Request, res: Response) => {
 export const updateAvatar = catchAsync(async (req: Request, res: Response) => {
   const userId = req.userId!;
   if (!req.file) customError("파일이 없습니다.", 400);
-  const avatarUrl = `/uploads/${req.file!.filename}`;
+  const file = req.file as Express.Multer.File & { key: string };
+  const avatarUrl = `${process.env.R2_PUBLIC_URL}/${file.key}`;
   await aboutService.updateAvatar(userId, avatarUrl);
   res.status(200).json({ bio_avatar: avatarUrl });
 });
