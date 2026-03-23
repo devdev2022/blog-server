@@ -43,7 +43,10 @@ const r2Client = new S3Client({
 
 function resolveFolder(req: Express.Request, fallback: AllowedFolder): string {
   const folder = (req as any).query?.folder;
-  if (typeof folder === "string" && (ALLOWED_FOLDERS as readonly string[]).includes(folder)) {
+  if (
+    typeof folder === "string" &&
+    (ALLOWED_FOLDERS as readonly string[]).includes(folder)
+  ) {
     return folder;
   }
   return fallback;
@@ -54,11 +57,15 @@ export const imageUpload = multer({
     s3: r2Client,
     bucket: process.env.R2_BUCKET_NAME!,
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    key: (req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, key: string) => void) => {
+    key: (
+      req: Express.Request,
+      file: Express.Multer.File,
+      cb: (error: Error | null, key: string) => void,
+    ) => {
       const folder = resolveFolder(req, "posts");
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
       const ext = path.extname(file.originalname);
-      cb(null, `${folder}/${unique}${ext}`);
+      cb(null, `${folder}/image/${unique}${ext}`);
     },
   }),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -76,11 +83,15 @@ export const videoUpload = multer({
     s3: r2Client,
     bucket: process.env.R2_BUCKET_NAME!,
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    key: (req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, key: string) => void) => {
+    key: (
+      req: Express.Request,
+      file: Express.Multer.File,
+      cb: (error: Error | null, key: string) => void,
+    ) => {
       const folder = resolveFolder(req, "posts");
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
       const ext = path.extname(file.originalname);
-      cb(null, `${folder}/${unique}${ext}`);
+      cb(null, `${folder}/video/${unique}${ext}`);
     },
   }),
   limits: { fileSize: 50 * 1024 * 1024 },

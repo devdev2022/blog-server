@@ -284,6 +284,21 @@ export const deletePost = async (id: string) => {
   );
 };
 
+export const filterUnsharedUrls = async (postId: string, urls: string[]): Promise<string[]> => {
+  if (urls.length === 0) return [];
+  const unshared: string[] = [];
+  for (const url of urls) {
+    const [{ count }] = await AppDataSource.query(
+      `SELECT COUNT(*) as count FROM post_media WHERE url = $1 AND post_id != $2`,
+      [url, postId],
+    );
+    if (parseInt(count as string, 10) === 0) {
+      unshared.push(url);
+    }
+  }
+  return unshared;
+};
+
 export const findTotalPostCount = async () => {
   const [{ count }] = await AppDataSource.query(
     `SELECT COUNT(*) as count FROM posts WHERE is_suspended = false AND temp = false`,

@@ -1,4 +1,5 @@
 import * as postsDao from "./postsDao";
+import { deleteFromR2 } from "../utils/r2";
 import { MainCategory } from "../../entity/MainCategory";
 import { SubCategory } from "../../entity/SubCategory";
 
@@ -316,7 +317,12 @@ export const getDraftById = async (id: string, userId: string) => {
 export const deletePost = async (id: string) => {
   const existing = await postsDao.findPostById(id);
   if (!existing) return null;
+
+  const mediaUrls = (existing.media ?? []).map((m: any) => m.url);
+  const urlsToDelete = await postsDao.filterUnsharedUrls(id, mediaUrls);
   await postsDao.deletePost(id);
+  await Promise.all(urlsToDelete.map(deleteFromR2));
+
   return true;
 };
 
