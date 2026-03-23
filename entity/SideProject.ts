@@ -1,34 +1,21 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   ManyToMany,
   JoinColumn,
   JoinTable,
-  BeforeInsert,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { User } from "./User";
 import { TechStack } from "./TechStack";
 
 @Entity("side_projects")
 export class SideProject {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) this.id = crypto.randomUUID();
-  }
-
-  @Column({
-    name: "user_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "user_id", type: "uuid" })
   userId!: string;
 
   @Column({ type: "varchar", length: 200 })

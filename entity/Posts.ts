@@ -1,17 +1,14 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   ManyToMany,
   JoinTable,
   OneToMany,
   JoinColumn,
-  BeforeInsert,
   CreateDateColumn,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { User } from "./User";
 import { PostMedia } from "./PostMedia";
 import { Tag } from "./Tag";
@@ -21,28 +18,16 @@ import { Comment } from "./Comment";
 
 @Entity("posts")
 export class Post {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) {
-      this.id = crypto.randomUUID();
-    }
-  }
-
-  @Column({
-    name: "user_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "user_id", type: "uuid" })
   userId!: string;
 
   @Column({ type: "varchar", length: 255 })
   title!: string;
 
-  @Column({ type: "longtext" })
+  @Column({ type: "text" })
   content!: string;
 
   @Column({
@@ -102,26 +87,14 @@ export class Post {
   @OneToMany(() => PostMedia, (media) => media.post, { cascade: true })
   media!: PostMedia[];
 
-  @Column({
-    name: "main_category_id",
-    type: "binary",
-    length: 16,
-    nullable: true,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "main_category_id", type: "uuid", nullable: true, default: null })
   mainCategoryId!: string | null;
 
   @ManyToOne(() => MainCategory, { nullable: true })
   @JoinColumn({ name: "main_category_id" })
   mainCategory!: MainCategory | null;
 
-  @Column({
-    name: "sub_category_id",
-    type: "binary",
-    length: 16,
-    nullable: true,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "sub_category_id", type: "uuid", nullable: true, default: null })
   subCategoryId!: string | null;
 
   @ManyToOne(() => SubCategory, (sub) => sub.posts, { nullable: true })

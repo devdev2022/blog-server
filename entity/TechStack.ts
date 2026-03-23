@@ -1,27 +1,19 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   ManyToMany,
   ManyToOne,
   JoinColumn,
-  BeforeInsert,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { WorkExperience } from "./WorkExperience";
 import { SideProject } from "./SideProject";
 import { TechStackCategory } from "./TechStackCategory";
 
 @Entity("tech_stacks")
 export class TechStack {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
-
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) this.id = crypto.randomUUID();
-  }
 
   @Column({ type: "varchar", length: 100, unique: true })
   name!: string;
@@ -29,13 +21,7 @@ export class TechStack {
   @Column({ name: "icon_url", type: "varchar", length: 500, nullable: true, default: null })
   iconUrl!: string | null;
 
-  @Column({
-    name: "category_id",
-    type: "binary",
-    length: 16,
-    nullable: true,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "category_id", type: "uuid", nullable: true, default: null })
   categoryId!: string | null;
 
   @ManyToOne(() => TechStackCategory, (category) => category.techStacks, { nullable: true, eager: false })

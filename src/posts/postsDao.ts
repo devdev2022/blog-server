@@ -62,10 +62,10 @@ export const findAllCategories = async () => {
   for (const main of categories) {
     const [{ count: mainCount }] = await AppDataSource.query(
       `SELECT COUNT(*) as count FROM posts
-       WHERE main_category_id = UNHEX(REPLACE(?, '-', ''))
+       WHERE main_category_id = $1
        AND sub_category_id IS NULL
-       AND is_suspended = 0
-       AND temp = 0`,
+       AND is_suspended = false
+       AND temp = false`,
       [main.id],
     );
     (main as any).postCount = parseInt(mainCount as string, 10);
@@ -73,9 +73,9 @@ export const findAllCategories = async () => {
     for (const sub of main.subCategories) {
       const [{ count }] = await AppDataSource.query(
         `SELECT COUNT(*) as count FROM posts
-         WHERE sub_category_id = UNHEX(REPLACE(?, '-', ''))
-         AND is_suspended = 0
-         AND temp = 0`,
+         WHERE sub_category_id = $1
+         AND is_suspended = false
+         AND temp = false`,
         [sub.id],
       );
       (sub as any).postCount = parseInt(count as string, 10);
@@ -92,7 +92,7 @@ export const findPostById = async (id: string) => {
     .leftJoinAndSelect("post.subCategory", "subCategory")
     .leftJoinAndSelect("post.tags", "tags")
     .leftJoinAndSelect("post.media", "media")
-    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("post.id = :id", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
     .andWhere("post.temp = :temp", { temp: false })
     .addOrderBy("media.order", "ASC")
@@ -128,7 +128,7 @@ export const findRecentPosts = async (id: string, limit = 5) => {
     .leftJoinAndSelect("post.subCategory", "subCategory")
     .leftJoinAndSelect("post.tags", "tags")
     .leftJoinAndSelect("post.media", "media")
-    .where("post.id != UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("post.id != :id", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
     .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
@@ -161,17 +161,17 @@ export const updatePost = async (
 ) => {
   if (data.mainCategoryId && data.subCategoryId) {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')), edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = $3, sub_category_id = $4, edited_at = NOW() WHERE id = $5`,
       [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
     );
   } else if (data.mainCategoryId) {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL, edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = $3, sub_category_id = NULL, edited_at = NOW() WHERE id = $4`,
       [data.title, data.content, data.mainCategoryId, id],
     );
   } else {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = NULL, sub_category_id = NULL, edited_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = NULL, sub_category_id = NULL, edited_at = NOW() WHERE id = $3`,
       [data.title, data.content, id],
     );
   }
@@ -193,12 +193,12 @@ export const findOrCreateTags = async (names: string[]) => {
 
 export const replacePostTags = async (postId: string, tagIds: string[]) => {
   await AppDataSource.query(
-    `DELETE FROM post_tags WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    `DELETE FROM post_tags WHERE post_id = $1`,
     [postId],
   );
   for (const tagId of tagIds) {
     await AppDataSource.query(
-      `INSERT INTO post_tags (post_id, tag_id) VALUES (UNHEX(REPLACE(?, '-', '')), UNHEX(REPLACE(?, '-', '')))`,
+      `INSERT INTO post_tags (post_id, tag_id) VALUES ($1, $2)`,
       [postId, tagId],
     );
   }
@@ -245,7 +245,7 @@ export const createPost = async (data: {
 export const findDraftById = async (id: string) => {
   return AppDataSource.getRepository(Post)
     .createQueryBuilder("post")
-    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("post.id = :id", { id })
     .andWhere("post.temp = :temp", { temp: true })
     .getOne();
 };
@@ -261,17 +261,17 @@ export const updateDraftPost = async (
 ) => {
   if (data.mainCategoryId && data.subCategoryId) {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = UNHEX(REPLACE(?, '-', '')) WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = $3, sub_category_id = $4 WHERE id = $5 AND temp = true`,
       [data.title, data.content, data.mainCategoryId, data.subCategoryId, id],
     );
   } else if (data.mainCategoryId) {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = UNHEX(REPLACE(?, '-', '')), sub_category_id = NULL WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = $3, sub_category_id = NULL WHERE id = $4 AND temp = true`,
       [data.title, data.content, data.mainCategoryId, id],
     );
   } else {
     await AppDataSource.query(
-      `UPDATE posts SET title = ?, content = ?, main_category_id = NULL, sub_category_id = NULL WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+      `UPDATE posts SET title = $1, content = $2, main_category_id = NULL, sub_category_id = NULL WHERE id = $3 AND temp = true`,
       [data.title, data.content, id],
     );
   }
@@ -279,21 +279,21 @@ export const updateDraftPost = async (
 
 export const deletePost = async (id: string) => {
   await AppDataSource.query(
-    `DELETE FROM posts WHERE id = UNHEX(REPLACE(?, '-', '')) AND temp = 0`,
+    `DELETE FROM posts WHERE id = $1 AND temp = false`,
     [id],
   );
 };
 
 export const findTotalPostCount = async () => {
   const [{ count }] = await AppDataSource.query(
-    `SELECT COUNT(*) as count FROM posts WHERE is_suspended = 0 AND temp = 0`,
+    `SELECT COUNT(*) as count FROM posts WHERE is_suspended = false AND temp = false`,
   );
   return parseInt(count as string, 10);
 };
 
 export const deleteDraftByIdAndUserId = async (id: string, userId: string) => {
   await AppDataSource.query(
-    `DELETE FROM posts WHERE id = UNHEX(REPLACE(?, '-', '')) AND user_id = UNHEX(REPLACE(?, '-', '')) AND temp = 1`,
+    `DELETE FROM posts WHERE id = $1 AND user_id = $2 AND temp = true`,
     [id, userId],
   );
 };
@@ -301,7 +301,7 @@ export const deleteDraftByIdAndUserId = async (id: string, userId: string) => {
 export const findDraftsByUserId = async (userId: string) => {
   return AppDataSource.getRepository(Post)
     .createQueryBuilder("post")
-    .where("post.userId = UNHEX(REPLACE(:userId, '-', ''))", { userId })
+    .where("post.userId = :userId", { userId })
     .andWhere("post.temp = :temp", { temp: true })
     .orderBy("post.createdAt", "DESC")
     .getMany();
@@ -313,8 +313,8 @@ export const findDraftByIdAndUserId = async (id: string, userId: string) => {
     .leftJoinAndSelect("post.tags", "tags")
     .leftJoinAndSelect("post.mainCategory", "mainCategory")
     .leftJoinAndSelect("post.subCategory", "subCategory")
-    .where("post.id = UNHEX(REPLACE(:id, '-', ''))", { id })
-    .andWhere("post.userId = UNHEX(REPLACE(:userId, '-', ''))", { userId })
+    .where("post.id = :id", { id })
+    .andWhere("post.userId = :userId", { userId })
     .andWhere("post.temp = :temp", { temp: true })
     .getOne();
 };
@@ -324,7 +324,7 @@ export const replacePostMedia = async (
   mediaList: { type: "image" | "video"; url: string; order: number }[],
 ) => {
   const existing: { url: string }[] = await AppDataSource.query(
-    `SELECT url FROM post_media WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    `SELECT url FROM post_media WHERE post_id = $1`,
     [postId],
   );
 
@@ -334,7 +334,7 @@ export const replacePostMedia = async (
   for (const m of removed) {
     const [{ count }] = await AppDataSource.query(
       `SELECT COUNT(*) as count FROM post_media
-       WHERE url = ? AND post_id != UNHEX(REPLACE(?, '-', ''))`,
+       WHERE url = $1 AND post_id != $2`,
       [m.url, postId],
     );
     if (parseInt(count as string, 10) === 0) {
@@ -343,7 +343,7 @@ export const replacePostMedia = async (
   }
 
   await AppDataSource.query(
-    `DELETE FROM post_media WHERE post_id = UNHEX(REPLACE(?, '-', ''))`,
+    `DELETE FROM post_media WHERE post_id = $1`,
     [postId],
   );
   const repo = AppDataSource.getRepository(PostMedia);

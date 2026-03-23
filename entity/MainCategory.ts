@@ -1,33 +1,20 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   OneToMany,
   ManyToOne,
   JoinColumn,
-  BeforeInsert,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { SubCategory } from "./SubCategory";
 import { User } from "./User";
 
 @Entity("main_categories")
 export class MainCategory {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) this.id = crypto.randomUUID();
-  }
-
-  @Column({
-    name: "user_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "user_id", type: "uuid" })
   userId!: string;
 
   @Column({ type: "varchar", length: 100 })

@@ -1,33 +1,18 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   JoinColumn,
-  BeforeInsert,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { Post } from "./Posts";
 
 @Entity("post_media")
 export class PostMedia {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) {
-      this.id = crypto.randomUUID();
-    }
-  }
-
-  @Column({
-    name: "post_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "post_id", type: "uuid" })
   postId!: string;
 
   @Column({ type: "enum", enum: ["image", "video"] })

@@ -1,29 +1,19 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  BeforeInsert,
   OneToMany,
 } from "typeorm";
-import crypto from "crypto";
 import { Post } from "./Posts";
 import { MainCategory } from "./MainCategory";
 import { WorkExperience } from "./WorkExperience";
 import { SideProject } from "./SideProject";
-import { uuidTransformer } from "../utils/uuid.transformer";
 
 @Entity("users")
 export class User {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
-
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) {
-      this.id = crypto.randomUUID();
-    }
-  }
 
   @Column({ unique: true, type: "bigint" })
   github_id!: number;

@@ -20,7 +20,7 @@ export const streamNotifications = async (req: Request, res: Response) => {
 
   try {
     const [row] = await AppDataSource.query(
-      `SELECT notification_read_at FROM users WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      `SELECT notification_read_at FROM users WHERE id = $1`,
       [req.userId],
     );
     const readAt: Date | null = row?.notification_read_at ?? null;
@@ -50,7 +50,7 @@ export const streamNotifications = async (req: Request, res: Response) => {
 export const markAsRead = async (req: Request, res: Response) => {
   try {
     await AppDataSource.query(
-      `UPDATE users SET notification_read_at = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+      `UPDATE users SET notification_read_at = NOW() WHERE id = $1`,
       [req.userId],
     );
     res.status(200).json({ message: "읽음 처리 완료" });

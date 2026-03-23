@@ -1,43 +1,23 @@
 import {
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   OneToMany,
   JoinColumn,
-  BeforeInsert,
   CreateDateColumn,
 } from "typeorm";
-import * as crypto from "crypto";
-import { uuidTransformer } from "../utils/uuid.transformer";
 import { Post } from "./Posts";
 
 @Entity("comments")
 export class Comment {
-  @PrimaryColumn({ type: "binary", length: 16, transformer: uuidTransformer })
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @BeforeInsert()
-  generateId() {
-    if (!this.id) this.id = crypto.randomUUID();
-  }
-
-  @Column({
-    name: "post_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-  })
+  @Column({ name: "post_id", type: "uuid" })
   postId!: string;
 
-  @Column({
-    name: "parent_id",
-    type: "binary",
-    length: 16,
-    transformer: uuidTransformer,
-    nullable: true,
-    default: null,
-  })
+  @Column({ name: "parent_id", type: "uuid", nullable: true, default: null })
   parentId!: string | null;
 
   @Column({ type: "varchar", length: 100 })

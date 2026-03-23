@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-dotenv.config();
+const env = process.env.NODE_ENV || "local";
+dotenv.config({ path: `.env.${env}` });
 
 import { createApp } from "./app";
 import { AppDataSource } from "./data-source";

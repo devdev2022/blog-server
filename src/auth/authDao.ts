@@ -31,16 +31,11 @@ export const reactivateUser = async (
 ) => {
   await AppDataSource.query(
     `UPDATE users
-     SET username = ?, profile_avatar = ?, blog_nickname = ?,
+     SET username = $1, profile_avatar = $2, blog_nickname = $3,
          bio = NULL, bio_avatar = NULL,
-         withdrawal = 0, withdrawal_date = NULL
-     WHERE id = UNHEX(REPLACE(?, '-', ''))`,
-    [
-      username,
-      avatarUrl,
-      null,
-      userId,
-    ]
+         withdrawal = false, withdrawal_date = NULL
+     WHERE id = $4`,
+    [username, avatarUrl, null, userId]
   );
   return AppDataSource.getRepository(User).findOne({ where: { id: userId } });
 };

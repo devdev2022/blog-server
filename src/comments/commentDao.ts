@@ -4,7 +4,7 @@ import { Comment } from "../../entity/Comment";
 export const findByPostId = async (postId: string) => {
   return AppDataSource.getRepository(Comment)
     .createQueryBuilder("comment")
-    .where("comment.post_id = UNHEX(REPLACE(:postId, '-', ''))", { postId })
+    .where("comment.postId = :postId", { postId })
     .orderBy("comment.createdAt", "ASC")
     .getMany();
 };
@@ -12,7 +12,7 @@ export const findByPostId = async (postId: string) => {
 export const findById = async (id: string) => {
   return AppDataSource.getRepository(Comment)
     .createQueryBuilder("comment")
-    .where("comment.id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("comment.id = :id", { id })
     .getOne();
 };
 
@@ -48,7 +48,7 @@ export const updateComment = async (
     .createQueryBuilder()
     .update(Comment)
     .set({ content, editedAt: new Date() })
-    .where("id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("id = :id", { id })
     .execute();
 };
 
@@ -70,6 +70,6 @@ export const deleteComment = async (id: string) => {
     .createQueryBuilder()
     .delete()
     .from(Comment)
-    .where("id = UNHEX(REPLACE(:id, '-', ''))", { id })
+    .where("id = :id", { id })
     .execute();
 };

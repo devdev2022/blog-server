@@ -35,7 +35,7 @@ export const updateUserProfile = async (
 export const withdrawUser = async (userId: string) => {
   await AppDataSource.getRepository(RefreshToken).delete({ user_id: userId });
   await AppDataSource.query(
-    `UPDATE users SET withdrawal = 1, withdrawal_date = NOW() WHERE id = UNHEX(REPLACE(?, '-', ''))`,
+    `UPDATE users SET withdrawal = true, withdrawal_date = NOW() WHERE id = $1`,
     [userId]
   );
 };
