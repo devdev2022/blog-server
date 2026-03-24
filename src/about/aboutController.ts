@@ -19,7 +19,8 @@ export const updateAvatar = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const getProfile = catchAsync(async (req: Request, res: Response) => {
-  const result = await aboutService.getProfile();
+  const userId = req.userId!;
+  const result = await aboutService.getProfile(userId);
   res.status(200).json(result);
 });
 

@@ -6,15 +6,15 @@ export const updateBio = async (userId: string, bio: string) => {
 };
 
 export const updateAvatar = async (userId: string, avatarUrl: string) => {
-  const existing = await aboutDao.findProfile();
+  const existing = await aboutDao.findProfile(userId);
   if (existing?.bioAvatar) {
     await deleteFromR2(existing.bioAvatar);
   }
   await aboutDao.updateAvatar(userId, avatarUrl);
 };
 
-export const getProfile = async () => {
-  const user = await aboutDao.findProfile();
+export const getProfile = async (userId: string) => {
+  const user = await aboutDao.findProfile(userId);
   if (!user) return null;
 
   return {
