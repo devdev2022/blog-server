@@ -4,7 +4,6 @@ import { PostMedia } from "../../entity/PostMedia";
 import { MainCategory } from "../../entity/MainCategory";
 import { SubCategory } from "../../entity/SubCategory";
 import { Tag } from "../../entity/Tag";
-import { deleteFromR2 } from "../utils/r2";
 
 interface FindPostsParams {
   page: number;
@@ -337,17 +336,14 @@ export const findDraftByIdAndUserId = async (id: string, userId: string) => {
 export const replacePostMedia = async (
   postId: string,
   mediaList: { type: "image" | "video"; url: string; order: number }[],
-) => {
+): Promise<string[]> => {
   const existing: { url: string }[] = await AppDataSource.query(
     `SELECT url FROM post_media WHERE post_id = $1`,
     [postId],
   );
 
   const newUrls = new Set(mediaList.map((m) => m.url));
-  const removed = existing.filter((m) => !newUrls.has(m.url));
-
-  const urlsToDelete = await filterUnsharedUrls(postId, removed.map((m) => m.url));
-  await Promise.all(urlsToDelete.map(deleteFromR2));
+  const removedUrls = existing.filter((m) => !newUrls.has(m.url)).map((m) => m.url);
 
   await AppDataSource.query(
     `DELETE FROM post_media WHERE post_id = $1`,
@@ -358,6 +354,8 @@ export const replacePostMedia = async (
     const media = repo.create({ postId, type: item.type, url: item.url, order: item.order });
     await repo.save(media);
   }
+
+  return removedUrls;
 };
 
 export const findAllTags = async () => {

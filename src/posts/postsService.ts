@@ -169,7 +169,9 @@ export const updatePost = async (
   await postsDao.replacePostTags(id, tags.map((t) => t.id));
 
   const media = extractMediaFromContent(data.content);
-  await postsDao.replacePostMedia(id, media);
+  const removedUrls = await postsDao.replacePostMedia(id, media);
+  const urlsToDelete = await postsDao.filterUnsharedUrls(id, removedUrls);
+  await Promise.all(urlsToDelete.map(deleteFromR2));
 
   return true;
 };
