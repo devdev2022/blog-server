@@ -46,7 +46,7 @@ export const refreshAccessToken = catchAsync(
     );
     res.status(200).json({
       accessToken,
-      user: { github_id: Number(user.github_id), username: user.username, profile_avatar: user.profileAvatar, blog_nickname: user.blogNickname ?? null },
+      user: { github_id: Number(user.github_id), username: user.username, profile_avatar: user.profileAvatar, blog_nickname: user.blogNickname ?? null, is_owner: Number(user.github_id) === Number(process.env.BLOG_OWNER_GITHUB_ID) },
     });
   },
 );
