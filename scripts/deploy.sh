@@ -5,7 +5,7 @@ DOCKER_IMAGE=$1
 ENV=$2   # stg | prod
 
 APP_DIR="/app"
-NGINX_UPSTREAM="/etc/nginx/conf.d/upstream.conf"
+NGINX_UPSTREAM="/etc/nginx/upstream.conf"
 
 if [ -z "$DOCKER_IMAGE" ] || [ -z "$ENV" ]; then
     echo "Usage: deploy.sh <docker-image> <env>"
