@@ -5,8 +5,8 @@ import { imageUpload } from "../utils/upload";
 
 const router = Router();
 
-// 프로필 조회 (인증 필요)
-router.get("/profile", validateAccessToken, aboutController.getProfile);
+// 프로필 조회
+router.get("/profile", aboutController.getProfile);
 
 // bio 수정 (인증 필요)
 router.patch("/profile/bio", validateAccessToken, aboutController.updateBio);

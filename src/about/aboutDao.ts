@@ -4,11 +4,11 @@ import { WorkExperience } from "../../entity/WorkExperience";
 import { SideProject } from "../../entity/SideProject";
 import { TechStack } from "../../entity/TechStack";
 
-export const findProfile = async (userId: string) => {
+export const findProfile = async () => {
   return AppDataSource.getRepository(User)
     .createQueryBuilder("user")
     .select(["user.id", "user.username", "user.bioAvatar", "user.bio", "user.role"])
-    .where("user.id = :userId", { userId })
+    .where("user.github_id = :githubId", { githubId: Number(process.env.BLOG_OWNER_GITHUB_ID) })
     .getOne();
 };
 
