@@ -9,9 +9,21 @@ import { globalErrorHandler } from "./src/utils/error";
 const createApp = () => {
   const app = express();
 
+  const allowedOrigins = [
+    process.env.PROD_CLIENT_URL,
+    process.env.STG_CLIENT_URL,
+    process.env.LOCAL_CLIENT_URL,
+  ].filter(Boolean) as string[];
+
   app.use(
     cors({
-      origin: process.env.CLIENT_URL || "http://127.0.0.1:3001",
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
