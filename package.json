@@ -5,10 +5,9 @@
   "main": "server.js",
   "scripts": {
     "build": "tsc",
-    "dev": "NODE_ENV=local nodemon dist/server.js",
-    "stg": "NODE_ENV=stg nodemon dist/server.js",
-    "prod": "NODE_ENV=prod node dist/server.js",
-    "test:userperformance": "cp ./tests/.env.test .env && jest --config ./tests/jest.config.ts --runInBand --detectOpenHandles --forceExit"
+    "dev": "NODE_ENV=local nodemon --ignore node_modules --ignore dist --ext ts --exec 'tsc && node dist/server.js'",
+    "stg": "NODE_ENV=stg node dist/server.js",
+    "prodprod": "NODE_ENV=prod node dist/server.js"
   },
   "repository": {
     "type": "git",
