@@ -22,10 +22,11 @@ export const githubCallback = catchAsync(
       code as string,
     );
 
+    const isRemote = process.env.NODE_ENV !== "local";
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: isRemote,
+      sameSite: isRemote ? "none" : "lax",
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14일
       path: "/",
     });
@@ -35,7 +36,14 @@ export const githubCallback = catchAsync(
       isNewUser: String(isNewUser),
     });
 
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?${params}`);
+    const clientUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.PROD_CLIENT_URL
+        : process.env.NODE_ENV === "stg"
+        ? process.env.STG_CLIENT_URL
+        : process.env.LOCAL_CLIENT_URL;
+
+    res.redirect(`${clientUrl}/auth/callback?${params}`);
   },
 );
 
@@ -53,10 +61,11 @@ export const refreshAccessToken = catchAsync(
 
 export const logOut = catchAsync(async (req: Request, res: Response) => {
   await authService.logOut(req.userId!);
+  const isRemote = process.env.NODE_ENV !== "local";
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isRemote,
+    sameSite: isRemote ? "none" : "lax",
     path: "/",
   });
   res.status(204).send();

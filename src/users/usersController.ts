@@ -37,10 +37,11 @@ export const updateMyProfile = catchAsync(
 export const deleteMyAccount = catchAsync(
   async (req: Request, res: Response) => {
     await usersService.deleteMyAccount(req.userId!);
+    const isRemote = process.env.NODE_ENV !== "local";
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: isRemote,
+      sameSite: isRemote ? "none" : "lax",
       path: "/",
     });
     res.status(204).send();
