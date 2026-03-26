@@ -27,11 +27,11 @@ const createApp = () => {
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
-    })
+    }),
   );
 
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
   app.use(morgan("combined"));
   app.use(cookieParser());
 
