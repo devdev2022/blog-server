@@ -46,7 +46,8 @@ export const updatePost = catchAsync(async (req: Request, res: Response) => {
     return;
   }
 
-  if (content.length > 100000) {
+  const plainContent = content.replace(/<[^>]*>/g, '');
+  if (plainContent.length > 100000) {
     res.status(400).json({ message: "본문은 100,000자 이내여야 합니다." });
     return;
   }
@@ -74,7 +75,8 @@ export const createPost = catchAsync(async (req: Request, res: Response) => {
     return;
   }
 
-  if (content.length > 100000) {
+  const plainContent = content.replace(/<[^>]*>/g, '');
+  if (plainContent.length > 100000) {
     res.status(400).json({ message: "본문은 100,000자 이내여야 합니다." });
     return;
   }
@@ -102,7 +104,8 @@ export const createDraft = catchAsync(async (req: Request, res: Response) => {
     return;
   }
 
-  if (content.length > 100000) {
+  const plainContent = content.replace(/<[^>]*>/g, '');
+  if (plainContent.length > 100000) {
     res.status(400).json({ message: "본문은 100,000자 이내여야 합니다." });
     return;
   }
@@ -131,7 +134,8 @@ export const updateDraft = catchAsync(async (req: Request, res: Response) => {
     return;
   }
 
-  if (content.length > 100000) {
+  const plainContent = content.replace(/<[^>]*>/g, '');
+  if (plainContent.length > 100000) {
     res.status(400).json({ message: "본문은 100,000자 이내여야 합니다." });
     return;
   }
