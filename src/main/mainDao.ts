@@ -10,6 +10,7 @@ export const findRecentPosts = async () => {
     .leftJoinAndSelect("post.tags", "tags")
     .leftJoinAndSelect("post.media", "media")
     .where("post.isSuspended = :isSuspended", { isSuspended: false })
+    .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
     .addOrderBy("media.order", "ASC")
     .take(3)
