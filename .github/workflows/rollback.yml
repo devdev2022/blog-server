@@ -4,16 +4,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  rollback-stg:
-    name: STG 롤백
+  rollback-prod:
+    name: PROD 롤백
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - name: STG 서버 롤백
+      - name: PROD 서버 롤백
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.STG_HOST }}
+          host: ${{ secrets.PROD_HOST }}
           username: deploy
-          key: ${{ secrets.STG_SSH_KEY }}
+          key: ${{ secrets.PROD_SSH_KEY }}
           script: |
             bash /app/scripts/rollback.sh
