@@ -1,0 +1,44 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: '롤백할 환경'
+        required: true
+        type: choice
+        options:
+          - stg
+          - prod
+
+jobs:
+  rollback-stg:
+    name: STG 롤백
+    if: github.event.inputs.env == 'stg'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: STG 서버 롤백
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STG_HOST }}
+          username: deploy
+          key: ${{ secrets.STG_SSH_KEY }}
+          script: |
+            bash /app/scripts/rollback.sh
+
+  rollback-prod:
+    name: PROD 롤백
+    if: github.event.inputs.env == 'prod'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: PROD 서버 롤백
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: deploy
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            bash /app/scripts/rollback.sh

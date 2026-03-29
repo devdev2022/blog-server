@@ -78,9 +78,8 @@ echo "트래픽 전환 완료: $NEXT (포트 $NEXT_PORT)"
 # ── 이전 컨테이너 종료 ──────────────────────────────────────────
 if [ -n "$CURRENT" ]; then
     sleep 5
-    echo "이전 컨테이너($CURRENT) 종료..."
+    echo "이전 컨테이너($CURRENT) 정지 (롤백용 보존)..."
     docker stop "blog-$CURRENT" || true
-    docker rm   "blog-$CURRENT" || true
 fi
 
 # ── 미사용 이미지 정리 ──────────────────────────────────────────
