@@ -4,8 +4,24 @@ on:
   workflow_dispatch:
 
 jobs:
+  rollback-stg:
+    name: STG 롤백
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: STG 서버 롤백
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STG_HOST }}
+          username: deploy
+          key: ${{ secrets.STG_SSH_KEY }}
+          script: |
+            bash /app/scripts/rollback.sh
+
   rollback-prod:
     name: PROD 롤백
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
 
