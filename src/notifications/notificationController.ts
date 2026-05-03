@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source";
 import { sseManager } from "./sseManager";
-import { findCommentsSince } from "../comments/commentDao";
+import { findCommentsPaginated } from "../comments/commentDao";
+
+const INIT_LIMIT = 20;
+const PAGE_LIMIT = 20;
 
 const toNotification = (comment: any) => ({
   id: comment.id.replaceAll("-", ""),
@@ -25,13 +28,14 @@ export const streamNotifications = async (req: Request, res: Response) => {
     );
     const readAt: Date | null = row?.notification_read_at ?? null;
 
-    // 목록 표시 범위: readAt 기준 7일 전 (readAt이 없으면 현재 기준 7일 전)
-    const base = readAt ?? new Date();
-    const windowStart = new Date(base.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const { items, hasMore } = await findCommentsPaginated(null, INIT_LIMIT);
+    const nextCursor =
+      items.length > 0 ? items[items.length - 1].createdAt.toISOString() : null;
 
-    const existing = await findCommentsSince(windowStart);
     const payload = {
-      items: existing.map(toNotification),
+      items: items.map(toNotification),
+      hasMore,
+      nextCursor,
       readAt: readAt ? readAt.toISOString() : null,
     };
     res.write(`event: init\ndata: ${JSON.stringify(payload)}\n\n`);
@@ -45,6 +49,20 @@ export const streamNotifications = async (req: Request, res: Response) => {
   req.on("close", () => {
     sseManager.removeClient(res);
   });
+};
+
+export const getNotifications = async (req: Request, res: Response) => {
+  const cursor =
+    typeof req.query.cursor === "string" ? req.query.cursor : null;
+
+  try {
+    const { items, hasMore } = await findCommentsPaginated(cursor, PAGE_LIMIT);
+    const nextCursor =
+      items.length > 0 ? items[items.length - 1].createdAt.toISOString() : null;
+    res.json({ items: items.map(toNotification), hasMore, nextCursor });
+  } catch {
+    res.status(500).json({ message: "서버 오류" });
+  }
 };
 
 export const markAsRead = async (req: Request, res: Response) => {

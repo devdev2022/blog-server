@@ -4,6 +4,9 @@ import * as notificationController from "./notificationController";
 
 const router = Router();
 
+// 알림 목록 페이지네이션 조회 (오너만)
+router.get("/", validateAccessToken, notificationController.getNotifications);
+
 // SSE 스트림 연결 (오너만)
 router.get("/stream", validateAccessToken, notificationController.streamNotifications);
 
