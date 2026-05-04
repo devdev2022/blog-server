@@ -82,7 +82,8 @@ if [ -n "$CURRENT" ]; then
     docker stop "blog-$CURRENT" || true
 fi
 
-# ── 미사용 이미지 정리 ──────────────────────────────────────────
+# ── 미사용 이미지/캐시 정리 ──────────────────────────────────────
 docker image prune -f > /dev/null 2>&1 || true
+docker builder prune -f > /dev/null 2>&1 || true  
 
 echo "=== 배포 완료 ==="

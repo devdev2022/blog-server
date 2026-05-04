@@ -65,6 +65,25 @@ export const findCommentsSince = async (since: Date | null) => {
   return qb.getMany();
 };
 
+export const findCommentsPaginated = async (
+  cursor: string | null,
+  limit: number,
+): Promise<{ items: Comment[]; hasMore: boolean }> => {
+  const qb = AppDataSource.getRepository(Comment)
+    .createQueryBuilder("comment")
+    .where("comment.githubId IS NULL")
+    .orderBy("comment.createdAt", "DESC")
+    .take(limit + 1);
+
+  if (cursor) {
+    qb.andWhere("comment.createdAt < :cursor", { cursor: new Date(cursor) });
+  }
+
+  const rows = await qb.getMany();
+  const hasMore = rows.length > limit;
+  return { items: hasMore ? rows.slice(0, limit) : rows, hasMore };
+};
+
 export const deleteComment = async (id: string) => {
   await AppDataSource.getRepository(Comment)
     .createQueryBuilder()
