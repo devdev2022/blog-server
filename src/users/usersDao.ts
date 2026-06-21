@@ -32,6 +32,10 @@ export const updateUserProfile = async (
   );
 };
 
+export const updateUserAvatar = async (userId: string, profileAvatar: string | null) => {
+  await AppDataSource.getRepository(User).update({ id: userId }, { profileAvatar });
+};
+
 export const withdrawUser = async (userId: string) => {
   await AppDataSource.getRepository(RefreshToken).delete({ user_id: userId });
   await AppDataSource.query(

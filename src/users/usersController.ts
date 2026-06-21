@@ -34,6 +34,16 @@ export const updateMyProfile = catchAsync(
   }
 );
 
+export const updateMyAvatar = catchAsync(
+  async (req: Request, res: Response) => {
+    if (!req.file) customError("파일이 없습니다.", 400);
+    const file = req.file as Express.Multer.File & { key: string };
+    const avatarUrl = `${process.env.R2_PUBLIC_URL}/${file.key}`;
+    await usersService.updateMyAvatar(req.userId!, avatarUrl);
+    res.status(200).json({ profile_avatar: avatarUrl });
+  }
+);
+
 export const deleteMyAccount = catchAsync(
   async (req: Request, res: Response) => {
     await usersService.deleteMyAccount(req.userId!);
