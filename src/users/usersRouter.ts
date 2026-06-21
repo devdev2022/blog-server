@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as usersController from "./usersController";
 import { validateAccessToken } from "../utils/tokenValidation";
+import { imageUpload } from "../utils/upload";
 
 const router = Router();
 
@@ -16,6 +17,12 @@ router.get(
 
 // 내 프로필 수정
 router.patch("/me", validateAccessToken, usersController.updateMyProfile);
+
+// 프로필 아바타 업로드
+router.patch("/me/avatar", validateAccessToken, (req, _res, next) => {
+  (req as any).query.folder = "profile";
+  next();
+}, imageUpload.single("avatar"), usersController.updateMyAvatar);
 
 // 회원 탈퇴
 router.delete("/me", validateAccessToken, usersController.deleteMyAccount);

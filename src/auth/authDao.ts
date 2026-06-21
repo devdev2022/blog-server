@@ -32,7 +32,7 @@ export const reactivateUser = async (
   await AppDataSource.query(
     `UPDATE users
      SET username = $1, profile_avatar = $2, blog_nickname = $3,
-         bio = NULL, bio_avatar = NULL,
+         bio = NULL,
          withdrawal = false, withdrawal_date = NULL
      WHERE id = $4`,
     [username, avatarUrl, null, userId]

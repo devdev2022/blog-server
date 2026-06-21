@@ -1,5 +1,6 @@
 import * as usersDao from "./usersDao";
 import { customError } from "../utils/error";
+import { deleteFromR2 } from "../utils/r2";
 
 const NICKNAME_REGEX = /^[a-zA-Z0-9]{5,30}$/;
 
@@ -68,6 +69,16 @@ export const updateMyProfile = async (
     bio: data.bio,
     profileAvatar: data.profile_avatar,
   });
+};
+
+export const updateMyAvatar = async (userId: string, avatarUrl: string) => {
+  const user = await usersDao.findUserById(userId);
+  if (!user) customError("유저를 찾을 수 없습니다.", 404);
+
+  if (user!.profileAvatar) {
+    await deleteFromR2(user!.profileAvatar);
+  }
+  await usersDao.updateUserAvatar(userId, avatarUrl);
 };
 
 export const deleteMyAccount = async (userId: string) => {

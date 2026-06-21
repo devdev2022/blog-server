@@ -7,17 +7,9 @@ import { TechStack } from "../../entity/TechStack";
 export const findProfile = async () => {
   return AppDataSource.getRepository(User)
     .createQueryBuilder("user")
-    .select(["user.id", "user.username", "user.bioAvatar", "user.bio", "user.role"])
+    .select(["user.id", "user.username", "user.profileAvatar", "user.bio", "user.role"])
     .where("user.github_id = :githubId", { githubId: Number(process.env.BLOG_OWNER_GITHUB_ID) })
     .getOne();
-};
-
-export const updateBio = async (userId: string, bio: string) => {
-  await AppDataSource.getRepository(User).update({ id: userId }, { bio });
-};
-
-export const updateAvatar = async (userId: string, avatarUrl: string) => {
-  await AppDataSource.getRepository(User).update({ id: userId }, { bioAvatar: avatarUrl });
 };
 
 export const findWorkExperiences = async () => {
