@@ -41,7 +41,7 @@ const r2Client = new S3Client({
   },
 });
 
-function resolveFolder(req: Express.Request, fallback: AllowedFolder): string {
+function resolveFolder(req: Express.Request): string {
   const folder = (req as any).query?.folder;
   if (
     typeof folder === "string" &&
@@ -49,7 +49,7 @@ function resolveFolder(req: Express.Request, fallback: AllowedFolder): string {
   ) {
     return folder;
   }
-  return fallback;
+  throw new Error(`유효하지 않은 폴더입니다. 허용값: ${ALLOWED_FOLDERS.join(", ")}`);
 }
 
 export const imageUpload = multer({
@@ -62,7 +62,7 @@ export const imageUpload = multer({
       file: Express.Multer.File,
       cb: (error: Error | null, key: string) => void,
     ) => {
-      const folder = resolveFolder(req, "posts");
+      const folder = resolveFolder(req);
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
       const ext = path.extname(file.originalname);
       cb(null, `${folder}/image/${unique}${ext}`);
@@ -88,7 +88,7 @@ export const videoUpload = multer({
       file: Express.Multer.File,
       cb: (error: Error | null, key: string) => void,
     ) => {
-      const folder = resolveFolder(req, "posts");
+      const folder = resolveFolder(req);
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
       const ext = path.extname(file.originalname);
       cb(null, `${folder}/video/${unique}${ext}`);
