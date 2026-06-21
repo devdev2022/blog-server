@@ -32,14 +32,6 @@ export class User {
   })
   profileAvatar?: string | null;
 
-  @Column({
-    name: "bio_avatar",
-    type: "text",
-    nullable: true,
-    default: null,
-  })
-  bioAvatar?: string | null;
-
   @Column({ type: "varchar", length: 500, nullable: true, default: null })
   bio?: string | null;
 
