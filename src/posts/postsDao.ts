@@ -98,12 +98,13 @@ export const findPostById = async (id: string) => {
     .getOne();
 };
 
-export const findAdjacentPosts = async (createdAt: Date) => {
+export const findAdjacentPosts = async (id: string, createdAt: Date) => {
   const repo = AppDataSource.getRepository(Post);
 
   const prev = await repo
     .createQueryBuilder("post")
     .where("post.createdAt < :createdAt", { createdAt })
+    .andWhere("post.id != :id", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
     .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "DESC")
@@ -112,6 +113,7 @@ export const findAdjacentPosts = async (createdAt: Date) => {
   const next = await repo
     .createQueryBuilder("post")
     .where("post.createdAt > :createdAt", { createdAt })
+    .andWhere("post.id != :id", { id })
     .andWhere("post.isSuspended = :isSuspended", { isSuspended: false })
     .andWhere("post.temp = :temp", { temp: false })
     .orderBy("post.createdAt", "ASC")

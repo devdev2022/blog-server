@@ -332,7 +332,7 @@ export const getPostById = async (id: string) => {
   const post = await postsDao.findPostById(id);
   if (!post) return null;
 
-  const { prev, next } = await postsDao.findAdjacentPosts(post.createdAt);
+  const { prev, next } = await postsDao.findAdjacentPosts(post.id, post.createdAt);
   const recentPosts = await postsDao.findRecentPosts(id);
 
   return {
